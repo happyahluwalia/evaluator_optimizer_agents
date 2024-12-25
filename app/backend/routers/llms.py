@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 from app.backend.llm_service import LLMService
 
-
 router = APIRouter()
 
 @router.get("/llms/models")

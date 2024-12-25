@@ -1,15 +1,9 @@
 import os
 from dotenv import load_dotenv
-# from dotenv.main import load_dotenv
-
-
-# from langchain_openai import ChatOpenAI
 
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from app.backend.config import LLM_MODELS
-
-
 
 
 class LLMService:

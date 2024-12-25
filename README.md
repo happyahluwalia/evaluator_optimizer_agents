@@ -28,6 +28,7 @@ The LLM Plan Optimizer is a web-based interface that enables users to select two
 3. Run the application and access it through a web browser.
     - docker build -t evaluator_app .
     - docker run -p 8000:8000 evaluator_app
+    - from root folder -> streamlit run app/chatui.py
 4. Follow the prompts to select LLMs, provide a prompt, and iterate through the optimization process.
 
 **Future Development:**
