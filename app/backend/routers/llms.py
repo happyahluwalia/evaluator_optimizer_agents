@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from llm_service import LLMService
+from app.backend.llm_service import LLMService
+
 
 router = APIRouter()
 

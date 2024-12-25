@@ -1,9 +1,26 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from routers.llms import router as llms_router
-from llm_service import LLMService
+from app.backend.database.database import init_db, SessionLocal
+
+from app.backend.routers.llms import router as llms_router
+from app.backend.llm_service import LLMService
 
 
-app = FastAPI()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Setup the database
+    startup()
+    db = SessionLocal()
+    yield
+    # Close the database
+    db.close()
+    
+def startup():
+    init_db()
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 def health_check():

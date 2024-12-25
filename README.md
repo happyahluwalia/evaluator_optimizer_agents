@@ -26,6 +26,8 @@ The LLM Plan Optimizer is a web-based interface that enables users to select two
 1. Clone the repository and install the required dependencies.
 2. Set up the LLM APIs and configure the interface to connect to the APIs.
 3. Run the application and access it through a web browser.
+    - docker build -t evaluator_app .
+    - docker run -p 8000:8000 evaluator_app
 4. Follow the prompts to select LLMs, provide a prompt, and iterate through the optimization process.
 
 **Future Development:**

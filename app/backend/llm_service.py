@@ -1,9 +1,15 @@
 import os
-from dotenv.main import load_dotenv
+from dotenv import load_dotenv
+# from dotenv.main import load_dotenv
+
+
+# from langchain_openai import ChatOpenAI
 
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
-from config import SUPPORTED_PROVIDERS
+from app.backend.config import LLM_MODELS
+
+
 
 
 class LLMService:
@@ -17,8 +23,7 @@ class LLMService:
             api_key = os.getenv("OPENAI_API_KEY")
             self.client = ChatOpenAI(model_name=model, temperature = 0, openai_api_key=api_key)
         elif provider == "anthropic":
-            if not os.environ.get("ANTHROPIC_API_KEY"):
-                api_key = os.environ["ANTHROPIC_API_KEY"]
+            api_key = os.getenv("ANTHROPIC_API_KEY")
             self.client = ChatAnthropic(model=model, anthropic_api_key=api_key)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
@@ -33,8 +38,9 @@ class LLMService:
         return [
             {
                 "provider": key,
-                "name": value["name"],
-                "models": value["models"],
+                "name": value["provider"],
+                "models": value["name"],
+                "description": value["description"]
             }
-            for key, value in SUPPORTED_PROVIDERS.items()
+            for key, value in LLM_MODELS.items()
         ]
