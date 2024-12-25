@@ -13,21 +13,21 @@ class User(Base):
     password = Column(String(255), nullable=False)  # Store hashed passwords
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
-class Session(Base):
-    __tablename__ = 'sessions'
-    session_id = Column(Integer, primary_key=True, autoincrement=True)
+class ChatSession(Base):
+    __tablename__ = 'chat_sessions'
+    chat_session_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
-    session_name = Column(String(255), nullable=False)
+    chat_session_name = Column(String(255), nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
-    user = relationship("User", back_populates="sessions")
+    user = relationship("User", back_populates="chat_sessions")
 
 class Prompt(Base):
     __tablename__ = 'prompts'
     prompt_id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(Integer, ForeignKey('sessions.session_id'), nullable=False)
+    session_id = Column(Integer, ForeignKey('chat_sessions.chat_session_id'), nullable=False)
     prompt_text = Column(Text, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
-    session = relationship("Session", back_populates="prompts")
+    session = relationship("ChatSession", back_populates="prompts")
 
 class Plan(Base):
     __tablename__ = 'plans'
@@ -51,7 +51,7 @@ class Evaluation(Base):
 class Discussion(Base):
     __tablename__ = 'discussions'
     discussion_id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(Integer, ForeignKey('sessions.session_id'), nullable=False)
+    session_id = Column(Integer, ForeignKey('chat_sessions.chat_session_id'), nullable=False)
     step_type = Column(String(50), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
@@ -61,8 +61,8 @@ class Discussion(Base):
     )
 
 # Relationships
-User.sessions = relationship("Session", order_by=Session.created_at, back_populates="user")
-Session.prompts = relationship("Prompt", order_by=Prompt.created_at, back_populates="session")
+User.chatsessions = relationship("ChatSession", order_by=ChatSession.created_at, back_populates="user")
+ChatSession.prompts = relationship("Prompt", order_by=Prompt.created_at, back_populates="chatsession")
 Prompt.plans = relationship("Plan", order_by=Plan.created_at, back_populates="prompt")
 Plan.evaluations = relationship("Evaluation", order_by=Evaluation.created_at, back_populates="plan")
-Session.discussions = relationship("Discussion", order_by=Discussion.created_at, back_populates="session")
+ChatSession.discussions = relationship("Discussion", order_by=Discussion.created_at, back_populates="chatsession")
