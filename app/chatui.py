@@ -8,9 +8,8 @@ import sys
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from backend.database.dbmodels import Session, ConversationStep
-
-# from .backend.routers.llms import generate_text  # Your LLM API call function
+from backend.database.dbmodels import Session, ConversationStep, StepType
+import requests
 
 # Initialize session state
 if 'current_session_id' not in st.session_state:
@@ -41,7 +40,9 @@ def get_user_sessions():
 
 def get_session_messages(session_id):
     """Get all messages for a session"""
-    return db.query(ConversationStep).filter_by(session_id=session_id).order_by(ConversationStep.created_at).all()
+    return db.query(ConversationStep).filter(
+        ConversationStep.session_id == session_id
+    ).order_by(ConversationStep.created_at).all()
 
 # Sidebar
 with st.sidebar:
@@ -67,40 +68,56 @@ with st.sidebar:
 # Main chat area
 if st.session_state.current_session_id:
     # Get current session
-    current_session = db.query(Session).get(st.session_state.current_session_id)
+    current_session = db.get(Session, st.session_state.current_session_id)
     st.header(current_session.title)
     
-    # Display messages
-    messages = get_session_messages(st.session_state.current_session_id)
-    for msg in messages:
-        if msg.step_type.value == "prompt":
-            st.chat_message("user").write(msg.content)
-        else:
-            st.chat_message("assistant").write(msg.content)
+    # Create a container for chat messages
+    chat_container = st.container()
     
-    # Input prompt
+    # Input prompt - Place this before displaying messages
     if prompt := st.chat_input("Enter your prompt..."):
         # Save user prompt
         new_prompt = ConversationStep(
             session_id=st.session_state.current_session_id,
-            step_type="prompt",
+            step_type=StepType.PROMPT,
             content=prompt
         )
         db.add(new_prompt)
         db.commit()
         
         # Generate and save response
-        response = generate_response(prompt)  # Your LLM API call
+        # TODO: remove the url hardcoding
+        api_url = "http://127.0.0.1:8000/generate"
+        params = {
+            "provider": "OpenAI",
+            "model": "gpt-4",
+            "prompt": prompt
+        }
+
+        try:
+            response = requests.get(api_url, params=params)
+            response.raise_for_status()  # Raise an exception for bad status codes
+            response_text = response.json()["response"]
+        except requests.RequestException as e:
+            response_text = f"Error: Unable to generate text - {str(e)}"
+
         new_response = ConversationStep(
             session_id=st.session_state.current_session_id,
-            step_type="plan",
-            content=response,
+            step_type=StepType.PLAN,
+            content=response_text,
             parent_step_id=new_prompt.step_id
         )
         db.add(new_response)
         db.commit()
-        
-        st.rerun()
+    
+    # Display messages in the container
+    with chat_container:
+        messages = get_session_messages(st.session_state.current_session_id)
+        for msg in messages:
+            if msg.step_type.value == StepType.PROMPT:
+                st.chat_message("user").write(msg.content)
+            else:
+                st.chat_message("assistant").write(msg.content)
 else:
     st.info("Select a chat session or create a new one to start.")
 

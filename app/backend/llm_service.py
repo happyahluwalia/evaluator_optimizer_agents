@@ -13,10 +13,10 @@ class LLMService:
         self.provider = provider
         self.model = model
 
-        if provider == "openai":
+        if provider == "OpenAI":
             api_key = os.getenv("OPENAI_API_KEY")
             self.client = ChatOpenAI(model_name=model, temperature = 0, openai_api_key=api_key)
-        elif provider == "anthropic":
+        elif provider == "Anthropic":
             api_key = os.getenv("ANTHROPIC_API_KEY")
             self.client = ChatAnthropic(model=model, anthropic_api_key=api_key)
         else:
